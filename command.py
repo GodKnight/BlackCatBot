@@ -22,14 +22,15 @@ isoweekday=['一','二','三','四','五','六','天']
 @bot.event
 async def on_ready():
     print('服务已开启')
-    startime = datetime.datetime.strptime(str(datetime.datetime.now().date() )+ '20:00', '%Y-%m-%d%H:%M')
-    endtime = datetime.datetime.strptime(str(datetime.datetime.now().date()) + '20:10', '%Y-%m-%d%H:%M')
+    startime = datetime.datetime.strptime(str(datetime.datetime.now().date() )+ '4:50', '%Y-%m-%d%H:%M')
+    endtime = datetime.datetime.strptime(str(datetime.datetime.now().date()) + '5:20', '%Y-%m-%d%H:%M')
     nowtime = datetime.datetime.now()
     if startime < nowtime < endtime:
         cywea=requests.get('https://devapi.qweather.com/v7/weather/3d?location=101120211&key='+api_id)
         lswea = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101120202&key=' + api_id)
         bcwea = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101121108&key=' + api_id)
         dgwea = requests.get('https://devapi.qweather.com/v7/weather/3d?location=101121504&key=' + api_id)
+        mryj = requests.get('https://apiv3.shanbay.com/weapps/dailyquote/quote/?date='+str(datetime.datetime.today().date()))
 
         cytq=cywea.json()['daily'][0]['textDay']
         cymax=cywea.json()['daily'][0]['tempMax']
@@ -56,7 +57,8 @@ async def on_ready():
                 await channel.send('早上好！今天是'+year+'年'+month+'月'+day+'日，星期'+isoweekday[weekday]+'\n城阳区天气'+str(cytq)+'，温度'+str(cymin)+'°C到'+str(cymax)+'°C，湿度'+str(cyhum)+\
                                        '%\n崂山区天气'+str(lstq)+'，温度'+str(lsmin)+'°C到'+str(lsmax)+'°C，湿度'+str(lshum)+\
                                        '%\n滨城区天气'+str(bctq)+'，温度'+str(bcmin)+'°C到'+str(bcmax)+'°C，湿度'+str(bchum)+\
-                                       '%\n东港区天气'+str(dgtq)+'，温度'+str(dgmin)+'°C到'+str(dgmax)+'°C，湿度'+str(cyhum)+'%')
+                                       '%\n东港区天气'+str(dgtq)+'，温度'+str(dgmin)+'°C到'+str(dgmax)+'°C，湿度'+str(dghum)+'%\n'+\
+                                   str(mryj.json()['content'])+'--'+str(mryj.json()['author']))
         dbcon = pymysql.connect(host='localhost', user='root', password=dbkey, database='userdata')
         cur = dbcon.cursor()
         cur.execute('update t_user set flag=0')
@@ -98,7 +100,7 @@ async def daka(ctx: commands.Context):
     cur.execute('select flag from t_user where userid=' + str(ctx.message.author.id))
     flag = cur.fetchall()
     if not (flag):
-        cur.execute('insert into t_user(userid,userpoint) values(\'' + str(ctx.message.author.id) + '\',10)')
+        cur.execute('insert into t_user values(\'' + str(ctx.message.author.id) + '\',1,10)')
         dbcon.commit()
         await ctx.reply(ctx.message.author.mention + '打卡成功，积分+10，当前积分：10')
         cur.close()
